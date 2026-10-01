@@ -219,3 +219,8 @@ app/
 10. Skills are versioned executable specifications and must be testable.
 11. Fallbacks may not silently change the semantic promise of the workflow.
 12. All retries must be idempotent where technically possible.
+
+## Mini App frontend (v0.4)
+
+`frontend/` is a thin client: React screens -> React Query hooks -> `api/miniapp.ts` -> `/v1/miniapp/*`. Telegram SDK access is isolated in `frontend/src/telegram`, UI kit access in `frontend/src/components/ui`. No workflow logic, identity, or ownership decisions live in the frontend. FastAPI optionally mounts the built bundle at `/miniapp`.
+

@@ -73,13 +73,21 @@ export function attachBackButton(handler: () => void): () => void {
 export const useBackButton = attachBackButton;
 
 export function haptic(
-  getTelegramWebApp()?.HapticFeedback?.impactOccurred?.(style);
+    style: "light" | "medium" | "heavy" | "rigid" | "soft" = "light",
+): void {
+    const webApp = getTelegramWebApp();
+    const hapticFeedback = webApp?.HapticFeedback;
+
+    if (hapticFeedback?.impactOccurred) {
+        hapticFeedback.impactOccurred(style);
+    }
 }
 
 export async function copyText(value: string): Promise<boolean> {
-  if (typeof navigator === "undefined" || !navigator.clipboard) {
-    return false;
-  }
-  await navigator.clipboard.writeText(value);
-  return true;
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+        return false;
+    }
+
+    await navigator.clipboard.writeText(value);
+    return true;
 }

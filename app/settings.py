@@ -38,6 +38,8 @@ class AppSettings(BaseSettings):
     telegram_default_workflow: Literal["soften", "decode", "help-say"] = "soften"
     telegram_init_data_max_age_seconds: int = 3600
 
+    miniapp_static_dir: str = "frontend/dist"
+
     @model_validator(mode="after")
     def validate_production_dependencies(self) -> "AppSettings":
         if self.llm_provider == "openai":

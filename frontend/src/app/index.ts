@@ -1,2 +1,2 @@
 export { AppProviders, useAppLanguage, useT } from "./AppProviders";
-export { AppRouter } from "./AppRouter";
+export { AppRouter, AppRoutes, BootstrapGate } from "./AppRouter";

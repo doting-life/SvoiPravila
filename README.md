@@ -1,4 +1,4 @@
-# Свои Правила Backend v0.3
+# Свои Правила Backend v0.4
 
 Deterministic agentic backend for the three MVP workflows:
 
@@ -7,6 +7,19 @@ Deterministic agentic backend for the three MVP workflows:
 - `help-say` — Помоги сказать
 
 The LLM reasons **inside** a stage. Python owns stage order, identity, artifact contracts, retries, checkpoints, provider wiring, authorization, and delivery.
+
+## Mini App frontend (v0.4)
+
+The Telegram Mini App lives in `frontend/` (React + TypeScript + Vite).
+
+```bash
+cd frontend
+npm install
+npm run dev        # proxies /v1 to http://localhost:8000
+npm run typecheck && npm run lint && npm test && npm run build
+```
+
+`npm run build` writes `frontend/dist`; FastAPI serves it at `/miniapp/` when the directory (`MINIAPP_STATIC_DIR`) exists. `docker compose up --build` builds the frontend and backend into one `app` image. Point the bot's Mini App URL to `https://<host>/miniapp/`.
 
 ## Architecture
 

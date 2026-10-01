@@ -75,3 +75,8 @@ psql "${DATABASE_URL/postgresql+asyncpg/postgresql}" -f migrations/0002_users_an
 ```
 
 The migration adds the `users` table and a `NOT VALID` relationship foreign key so legacy rows are not destroyed. Legacy application users should be mapped explicitly before validating the constraint.
+
+## Frontend hosting (v0.4)
+
+The built Mini App is served by FastAPI at `/miniapp/` when `MINIAPP_STATIC_DIR` (default `frontend/dist`) exists; otherwise `/miniapp` returns 404. The frontend calls only `/v1/miniapp/*` and sends raw `Telegram.WebApp.initData` in `X-Telegram-Init-Data` on every request. `/v1/assist/*` remains internal and is not used by the frontend.
+
