@@ -1,0 +1,7 @@
+name: safety-core
+version: "1.0"
+type: core
+source: skills/core/safety.md
+priority: 100
+compatible_workflows: [soften, decode, help-say]
+required_inputs: [safety_decision]

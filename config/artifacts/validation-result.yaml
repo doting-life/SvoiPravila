@@ -1,0 +1,23 @@
+name: validation_result
+version: "1.0"
+type: object
+required: [version, request_id, status, schema_valid, policy_valid, language_valid, semantic_checks, retry_instructions]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  status: {type: string, enum: [pass, retry, block]}
+  schema_valid: {type: boolean}
+  policy_valid: {type: boolean}
+  language_valid: {type: boolean}
+  semantic_checks:
+    type: array
+    items:
+      type: object
+      required: [name, passed]
+      properties:
+        name: {type: string}
+        passed: {type: boolean}
+        details: {type: [string, "null"]}
+  retry_instructions:
+    type: array
+    items: {type: string}

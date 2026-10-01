@@ -1,0 +1,13 @@
+name: soften_result
+version: "1.0"
+type: object
+required: [version, request_id, original_intent, rewritten_message, tone_applied, constraints_respected]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  original_intent: {type: string}
+  rewritten_message: {type: string, minLength: 1}
+  tone_applied: {type: string}
+  constraints_respected:
+    type: array
+    items: {type: string}

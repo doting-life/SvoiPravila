@@ -1,0 +1,21 @@
+name: telegram-bot
+version: "1.0"
+transport: webhook
+adapter: app.api.telegram
+configuration:
+  enabled_env: TELEGRAM_ENABLED
+  bot_token_env: TELEGRAM_BOT_TOKEN
+  webhook_secret_env: TELEGRAM_WEBHOOK_SECRET
+  webhook_url_env: TELEGRAM_WEBHOOK_URL
+  default_workflow_env: TELEGRAM_DEFAULT_WORKFLOW
+updates:
+  - inline_query
+  - message
+inline_mode:
+  cache_time_seconds: 0
+  personal_results: true
+  query_limit_note: "Telegram InlineQuery.query is limited to 256 characters"
+
+miniapp:
+  manifest: config/integrations/telegram-miniapp.yaml
+  init_data_header: X-Telegram-Init-Data

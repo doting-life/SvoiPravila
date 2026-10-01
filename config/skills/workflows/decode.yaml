@@ -1,0 +1,8 @@
+name: decode
+version: "1.0"
+type: workflow
+source: skills/workflows/decode.md
+compatible_workflows: [decode]
+requires_core_skills: [safety-core, relationship-rules, output-contract]
+required_inputs: [message_request, safety_decision, relationship_context, generation_plan]
+output_artifact: decode_result

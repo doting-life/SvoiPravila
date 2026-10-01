@@ -1,0 +1,7 @@
+name: output-contract
+version: "1.0"
+type: core
+source: skills/core/output-contract.md
+priority: 90
+compatible_workflows: [soften, decode, help-say]
+required_inputs: [generation_plan]

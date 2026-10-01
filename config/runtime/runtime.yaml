@@ -1,0 +1,36 @@
+version: "2.0"
+workflow_engine:
+  deterministic_stage_order: true
+  allow_llm_stage_jumps: false
+  strict_artifact_dependencies: true
+  strict_schema_validation: true
+checkpoint:
+  backend: env
+  development_default: memory
+  production_recommended: redis
+  ttl_seconds: 1200
+  resume_enabled: true
+privacy:
+  persist_raw_messages_to_database: false
+  persist_raw_prompts: false
+  persist_raw_model_outputs: false
+  transient_checkpoint_content: true
+observability:
+  request_trace_enabled: true
+  trace_raw_content: false
+llm:
+  provider: env
+  development_default: fake
+  production_recommended: openai
+  structured_output_required: true
+  timeout_seconds: 30
+  max_generation_attempts: 2
+relationships:
+  backend: env
+  development_default: memory
+  production_recommended: postgres
+telegram:
+  adapter: webhook
+  inline_mode: true
+  inline_cache_time_seconds: 0
+  inline_results_personal: true

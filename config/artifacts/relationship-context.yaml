@@ -1,0 +1,27 @@
+name: relationship_context
+version: "1.0"
+type: object
+required: [version, request_id, rules, ruleset_version, communication_style]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  relationship_id: {type: [string, "null"]}
+  relation_type: {type: [string, "null"]}
+  aliases:
+    type: array
+    items: {type: string}
+  rules:
+    type: array
+    items:
+      type: object
+      required: [type, value]
+      properties:
+        id: {type: [integer, "null"]}
+        type: {type: string}
+        value: {type: string}
+        priority: {type: integer}
+        created_at: {type: [string, "null"]}
+  communication_style:
+    type: object
+    additionalProperties: true
+  ruleset_version: {type: integer, minimum: 0}

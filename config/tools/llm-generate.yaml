@@ -1,0 +1,20 @@
+name: llm_generate
+version: "1.0"
+capability: structured_generation
+provider: configurable
+stability: beta
+runtime: api
+input_artifacts: [message_request, safety_decision, relationship_context, generation_plan]
+output_artifacts: [soften_result, decode_result, help_say_result]
+timeout_seconds: 30
+retry:
+  max_attempts: 2
+  backoff: exponential
+privacy:
+  sends_raw_message_to_provider: true
+  persistent_provider_storage_required: false
+observability:
+  record_tokens: true
+  record_cost: true
+  record_latency: true
+  record_raw_prompt: false

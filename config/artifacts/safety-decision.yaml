@@ -1,0 +1,15 @@
+name: safety_decision
+version: "1.0"
+type: object
+required: [version, request_id, status, categories, instructions]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  status: {type: string, enum: [allow, allow_with_constraints, block]}
+  categories:
+    type: array
+    items: {type: string}
+  instructions:
+    type: array
+    items: {type: string}
+  user_message: {type: [string, "null"]}

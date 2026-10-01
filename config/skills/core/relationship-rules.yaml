@@ -1,0 +1,7 @@
+name: relationship-rules
+version: "1.0"
+type: core
+source: skills/core/relationship-rules.md
+priority: 80
+compatible_workflows: [soften, decode, help-say]
+required_inputs: [relationship_context]

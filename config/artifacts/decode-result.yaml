@@ -1,0 +1,14 @@
+name: decode_result
+version: "1.0"
+type: object
+required: [version, request_id, literal_meaning, probable_intent, emotional_tone, uncertainty, alternative_interpretations]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  literal_meaning: {type: string}
+  probable_intent: {type: string}
+  emotional_tone: {type: string}
+  uncertainty: {type: string}
+  alternative_interpretations:
+    type: array
+    items: {type: string}

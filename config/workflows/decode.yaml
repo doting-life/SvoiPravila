@@ -1,0 +1,44 @@
+name: decode
+version: "1.0"
+description: Explain a message while separating observation from inference.
+entrypoint: receive
+stages:
+  - name: receive
+    handler: stages.receive.ReceiveStage
+    produces: message_request
+  - name: safety
+    handler: stages.safety.SafetyStage
+    requires: [message_request]
+    produces: safety_decision
+  - name: context
+    handler: stages.context.ContextStage
+    requires: [message_request]
+    produces: relationship_context
+  - name: plan
+    handler: stages.planning.PlanningStage
+    requires: [message_request, safety_decision, relationship_context]
+    produces: generation_plan
+    config:
+      skill: decode
+      skill_version: "1.0"
+      output_artifact: decode_result
+  - name: generate
+    handler: stages.generation.GenerationStage
+    requires: [message_request, safety_decision, relationship_context, generation_plan]
+    produces: decode_result
+    tools: [llm_generate]
+  - name: validate
+    handler: stages.validation.ValidationStage
+    requires: [message_request, safety_decision, generation_plan, decode_result]
+    produces: validation_result
+    retry:
+      max_attempts: 2
+      retry_stage: generate
+  - name: deliver
+    handler: stages.delivery.DeliveryStage
+    requires: [decode_result, validation_result]
+    produces: delivery_response
+policies:
+  motive_as_fact: forbidden
+  diagnosis: forbidden
+  raw_message_persistence: forbidden
