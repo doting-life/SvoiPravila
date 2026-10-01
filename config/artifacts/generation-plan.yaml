@@ -1,0 +1,19 @@
+name: generation_plan
+version: "1.0"
+type: object
+required: [version, request_id, workflow, skill_name, skill_version, objective, constraints, output_schema]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  workflow: {type: string}
+  skill_name: {type: string}
+  skill_version: {type: string}
+  objective: {type: string}
+  tone: {type: [string, "null"]}
+  constraints:
+    type: array
+    items: {type: string}
+  output_schema: {type: string}
+  provider_preferences:
+    type: object
+    additionalProperties: true

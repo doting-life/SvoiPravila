@@ -1,0 +1,13 @@
+name: help_say_result
+version: "1.0"
+type: object
+required: [version, request_id, message, tone, preserved_intent, warnings]
+properties:
+  version: {type: string}
+  request_id: {type: string, format: uuid}
+  message: {type: string, minLength: 1}
+  tone: {type: string}
+  preserved_intent: {type: string}
+  warnings:
+    type: array
+    items: {type: string}

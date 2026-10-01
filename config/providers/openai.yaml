@@ -1,0 +1,14 @@
+name: openai-structured
+version: "1.0"
+capability: structured_generation
+runtime: api
+adapter: app.tools.llm.openai_provider.OpenAIStructuredLLMProvider
+configuration:
+  api_key_env: OPENAI_API_KEY
+  model_env: OPENAI_MODEL
+  timeout_seconds_env: OPENAI_TIMEOUT_SECONDS
+  max_retries_env: OPENAI_MAX_RETRIES
+contract:
+  sdk_surface: responses.parse
+  pydantic_structured_output: true
+  raw_output_persistence: false

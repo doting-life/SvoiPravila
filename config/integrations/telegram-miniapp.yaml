@@ -1,0 +1,31 @@
+name: telegram-miniapp
+version: "1.0"
+adapter: app.api.miniapp
+authenticator: app.integrations.telegram.miniapp_auth.TelegramMiniAppAuth
+auth:
+  source: Telegram.WebApp.initData
+  transport_header: X-Telegram-Init-Data
+  algorithm: HMAC-SHA-256
+  bot_token_env: TELEGRAM_BOT_TOKEN
+  max_age_seconds_env: TELEGRAM_INIT_DATA_MAX_AGE_SECONDS
+  trust_init_data_unsafe: false
+identity:
+  external_key: telegram_user_id
+  internal_key: user_id
+  create_on_first_valid_request: true
+endpoints:
+  - POST /v1/miniapp/auth
+  - GET /v1/miniapp/bootstrap
+  - GET /v1/miniapp/relationships
+  - POST /v1/miniapp/relationships
+  - PATCH /v1/miniapp/relationships/{relationship_id}
+  - DELETE /v1/miniapp/relationships/{relationship_id}
+  - PUT /v1/miniapp/me/default-relationship/{relationship_id}
+  - POST /v1/miniapp/relationships/{relationship_id}/rules
+  - PUT /v1/miniapp/relationships/{relationship_id}/rules/{rule_id}
+  - DELETE /v1/miniapp/relationships/{relationship_id}/rules/{rule_id}
+  - POST /v1/miniapp/assist/{workflow}
+security:
+  derive_user_from_verified_init_data: true
+  reject_client_supplied_user_id: true
+  relationship_owner_check: true

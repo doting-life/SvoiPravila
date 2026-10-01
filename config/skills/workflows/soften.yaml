@@ -1,0 +1,8 @@
+name: soften
+version: "1.0"
+type: workflow
+source: skills/workflows/soften.md
+compatible_workflows: [soften]
+requires_core_skills: [safety-core, relationship-rules, output-contract]
+required_inputs: [message_request, safety_decision, relationship_context, generation_plan]
+output_artifact: soften_result

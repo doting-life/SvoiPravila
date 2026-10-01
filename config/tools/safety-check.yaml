@@ -1,0 +1,14 @@
+name: safety_check
+version: "1.0"
+capability: safety_classification
+provider: internal_or_configurable
+stability: beta
+runtime: hybrid
+input_artifacts: [message_request]
+output_artifacts: [safety_decision]
+timeout_seconds: 10
+privacy:
+  sends_raw_message_to_provider: configurable
+observability:
+  record_categories: true
+  record_raw_message: false

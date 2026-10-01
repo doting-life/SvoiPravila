@@ -1,0 +1,17 @@
+name: users
+version: "1.0"
+repository: app.repositories.users.UserRepository
+providers:
+  development: app.repositories.users.InMemoryUserRepository
+  production: app.repositories.postgres_users.PostgresUserRepository
+identity:
+  internal: user_id
+  telegram: telegram_user_id
+fields:
+  - first_name
+  - last_name
+  - username
+  - language_code
+  - default_relationship_id
+privacy:
+  stores_raw_messages: false

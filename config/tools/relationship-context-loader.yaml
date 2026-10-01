@@ -1,0 +1,10 @@
+name: relationship_context_loader
+version: "1.0"
+capability: context_load
+provider: postgres
+stability: production
+runtime: local
+input_fields: [user_id, relationship_id]
+output_artifacts: [relationship_context]
+privacy:
+  sends_raw_message_to_provider: false

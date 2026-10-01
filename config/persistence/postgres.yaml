@@ -1,0 +1,12 @@
+name: postgres-relationships
+version: "1.0"
+capability: relationship_repository
+adapter: app.repositories.postgres_relationships.PostgresRelationshipRepository
+configuration:
+  database_url_env: DATABASE_URL
+entities:
+  - relationships
+  - relationship_rules
+privacy:
+  persist_raw_messages: false
+  persist_relationship_rules: true

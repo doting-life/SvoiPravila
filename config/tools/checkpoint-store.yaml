@@ -1,0 +1,11 @@
+name: checkpoint_store
+version: "1.0"
+capability: ephemeral_state
+provider: redis
+stability: production
+runtime: local
+key_pattern: "request:{request_id}"
+default_ttl_seconds: 1200
+privacy:
+  raw_message_allowed: true
+  persistent_storage: false
