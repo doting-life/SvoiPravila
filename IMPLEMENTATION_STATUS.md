@@ -1,4 +1,4 @@
-# Implementation Status — v0.3
+v0.4
 
 ## Core already implemented
 
@@ -39,14 +39,23 @@
 - PostgreSQL migration `migrations/0002_users_and_miniapp.sql` for existing v0.2 installations.
 - Mini App YAML manifest and API documentation.
 
+## Implemented in v0.4
+
+- Telegram Mini App frontend (`frontend/`, React + TypeScript + Vite, `@telegram-apps/telegram-ui`).
+- Bootstrap gate: users without relationships are routed to onboarding.
+- Screens: Onboarding, Main (soften/decode/help-say with per-request relationship override), Relationships (create/delete/set default), Relationship details (edit, rule CRUD), Settings (ru/en override).
+- Frontend consumes only `/v1/miniapp/*`; identity comes from `X-Telegram-Init-Data`.
+- FastAPI serves the built frontend at `/miniapp` when `MINIAPP_STATIC_DIR` (default `frontend/dist`) exists; API routes are unaffected.
+- Multi-stage `Dockerfile` (frontend build + Python runtime) and `app` service in `docker-compose.yml`.
+
 ## Current validation
 
-- 18 automated tests pass.
+- 22 backend tests pass (including `/miniapp` static hosting tests).
+- Frontend typecheck/lint/Vitest/build not yet executed in this environment (Node.js unavailable).
 - The test suite covers Telegram initData integrity/expiry, user creation, relationship CRUD, rule creation, default relationship resolution, tenant isolation, workflow retry/resume, OpenAI adapter contracts, Redis checkpoints, and Telegram parsing.
 
 ## Deliberately deferred
 
-- Actual Mini App frontend UI (React/Vue/etc.).
 - Alembic migration framework; v0.3 ships an explicit SQL migration.
 - Dedicated production moderation/safety provider.
 - Persistent telemetry backend / dashboards.

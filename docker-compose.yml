@@ -25,5 +25,21 @@ services:
       timeout: 3s
       retries: 10
 
+  app:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://svoi_pravila:svoi_pravila@postgres:5432/svoi_pravila
+      REDIS_URL: redis://redis:6379/0
+      MINIAPP_STATIC_DIR: /app/frontend/dist
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
