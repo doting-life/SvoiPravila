@@ -51,7 +51,7 @@ describe("query hooks", () => {
         ),
       ),
     );
-    const wrapper
+    const wrapper = createWrapper();
 
     const { result: bootstrap } = renderHook(() => useBootstrapQuery(), { wrapper });
     await waitFor(() => expect(bootstrap.current.isSuccess).toBe(true));

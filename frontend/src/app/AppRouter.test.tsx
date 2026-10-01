@@ -46,7 +46,7 @@ describe("BootstrapGate", () => {
     renderApp("/");
     expect(await screen.findByRole("button", { name: "Submit" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Settings", level: 1 })).toBeInTheDocument();
   });
 
   it("shows a localized error with retry", async () => {

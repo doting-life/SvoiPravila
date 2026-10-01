@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { AppProviders, AppRouter } from "./app";
+import { AppProviders, AppRouter } from "./app/index";
 import { initTelegram } from "./telegram";
 
 function AppShell() {
