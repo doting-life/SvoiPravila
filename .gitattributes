@@ -3,6 +3,12 @@
 ###############################################################################
 * text=auto
 
+# Generated API contract artifacts must stay byte-identical (LF) on every OS.
+docs/openapi.json text eol=lf
+docs/openapi.yaml text eol=lf
+docs/fixtures/*.json text eol=lf
+clients/typescript/src/generated/*.ts text eol=lf
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

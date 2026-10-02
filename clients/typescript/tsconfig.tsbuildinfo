@@ -1,0 +1,1 @@
+{"root":["./src/client.ts","./src/errors.ts","./src/guards.ts","./src/index.ts","./src/types.ts","./src/generated/openapi.ts","./test/client.test.ts","./test/examples.test.ts"],"version":"5.6.3"}

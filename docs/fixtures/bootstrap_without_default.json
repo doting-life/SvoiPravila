@@ -1,0 +1,12 @@
+{
+  "relationships": [],
+  "user": {
+    "default_relationship_id": null,
+    "first_name": "Dmitry",
+    "language_code": "ru",
+    "last_name": null,
+    "telegram_user_id": 777002,
+    "user_id": "usr_9a2e4b71",
+    "username": null
+  }
+}

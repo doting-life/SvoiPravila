@@ -1,0 +1,8 @@
+{
+  "request_id": "55555555-5555-4555-8555-555555555555",
+  "status": "error",
+  "structured_result": null,
+  "text": "Не удалось получить корректный ответ.",
+  "version": "1.0",
+  "workflow": "help-say"
+}

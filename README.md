@@ -1,4 +1,4 @@
-# Свои Правила Backend v0.4
+# Свои Правила Backend v0.5
 
 Deterministic agentic backend for the three MVP workflows:
 
@@ -8,9 +8,21 @@ Deterministic agentic backend for the three MVP workflows:
 
 The LLM reasons **inside** a stage. Python owns stage order, identity, artifact contracts, retries, checkpoints, provider wiring, authorization, and delivery.
 
-## Mini App frontend (v0.4)
+**New here?** [docs/QUICKSTART.md](docs/QUICKSTART.md) runs the API locally in fake/memory mode in about five minutes.
 
-The Telegram Mini App lives in `frontend/` (React + TypeScript + Vite).
+## Integration Kit (v0.5)
+
+| What | Where |
+| --- | --- |
+| OpenAPI contract | `docs/openapi.json`, `docs/openapi.yaml` (`python scripts/export_openapi.py [--check]`) |
+| Sample payloads | `docs/fixtures/` |
+| TypeScript client | `clients/typescript` (`@svoi-pravila/miniapp-client`, DTOs generated from OpenAPI) |
+| Examples | `examples/python`, `examples/typescript`, `examples/javascript`, `examples/curl` |
+| Guides | [docs/INTEGRATION.md](docs/INTEGRATION.md), [docs/QUICKSTART.md](docs/QUICKSTART.md) |
+
+## Mini App frontend
+
+The Telegram Mini App lives in `frontend/` (React + TypeScript + Vite). Its API layer (`frontend/src/api/`) is a thin adapter over the local `clients/typescript` package, linked via `file:../clients/typescript`.
 
 ```bash
 cd frontend
@@ -19,7 +31,7 @@ npm run dev        # proxies /v1 to http://localhost:8000
 npm run typecheck && npm run lint && npm test && npm run build
 ```
 
-`npm run build` writes `frontend/dist`; FastAPI serves it at `/miniapp/` when the directory (`MINIAPP_STATIC_DIR`) exists. `docker compose up --build` builds the frontend and backend into one `app` image. Point the bot's Mini App URL to `https://<host>/miniapp/`.
+`docker compose up --build` builds the frontend (together with the local client package) and backend into one `app` image.
 
 ## Architecture
 
@@ -145,7 +157,7 @@ POST   /v1/miniapp/assist/{workflow}
 
 When `relationship_id` is omitted from an AI request, the workflow loads the user's `default_relationship_id` automatically.
 
-See [docs/MINIAPP_API.md](docs/MINIAPP_API.md).
+See [docs/MINIAPP_API.md](docs/MINIAPP_API.md) and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 
 ## Privacy model
 
@@ -159,6 +171,7 @@ See [docs/MINIAPP_API.md](docs/MINIAPP_API.md).
 
 ```bash
 pytest -q
+cd clients/typescript && npm install && npm run check:generated && npm run typecheck && npm test
 ```
 
-The suite runs without live OpenAI, PostgreSQL, Redis, or Telegram credentials.
+The suite runs without live OpenAI, PostgreSQL, Redis, or Telegram credentials. Contract tests fail if `docs/openapi.*`, `docs/fixtures/`, the generated TypeScript DTOs or the curl examples drift from the FastAPI models.

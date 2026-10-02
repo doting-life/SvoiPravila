@@ -168,7 +168,7 @@ export function RelationshipDetailsScreen() {
         {rules.length === 0 ? <EmptyState message={dict.noRules} /> : null}
         {rules.map((rule) => {
           const ruleId = rule.id;
-          if (ruleId !== undefined && editingRuleId === ruleId) {
+          if (ruleId != null && editingRuleId === ruleId) {
             return (
               <RuleForm
                 key={ruleId}
@@ -186,7 +186,7 @@ export function RelationshipDetailsScreen() {
           return (
             <div key={ruleId ?? `${rule.type}-${rule.value}`} data-testid={`rule-${ruleId ?? "new"}`}>
               <ListCell subtitle={`${rule.type} · ${dict.rulePriority}: ${rule.priority}`}>{rule.value}</ListCell>
-              {ruleId !== undefined ? (
+              {ruleId != null ? (
                 <Stack>
                   <Row>
                     <Button mode="bezeled" aria-label={`${dict.edit}: ${rule.value}`} onClick={() => setEditingRuleId(ruleId)}>
