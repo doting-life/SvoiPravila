@@ -1,6 +1,6 @@
 # Codebase Guide — "where do I look?"
 
-Baseline documented: branch `v0.4`, commit `625e479`. The code is the source of truth; see [Known technical debt and inconsistencies](#known-technical-debt-and-inconsistencies) where docs disagree.
+Baseline documented: v0.5 (Integration Kit, branch `v0.5-integration`). The code is the source of truth; see [Known technical debt and inconsistencies](#known-technical-debt-and-inconsistencies) where docs disagree.
 
 Status tags used below:
 

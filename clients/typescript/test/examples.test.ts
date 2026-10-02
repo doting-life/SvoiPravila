@@ -33,7 +33,7 @@ describe("examples/typescript/basic-usage.ts", () => {
       "POST /v1/miniapp/assist/soften": () => json(fixture("delivery_soften.json")),
     });
 
-    const text = await runExample({ initData: "x", fetch: impl });
+    const text = await runExample({ getInitData: () => "x", baseUrl: "", fetch: impl });
 
     expect(text).toBe((fixture("delivery_soften.json") as { text: string }).text);
     expect(seen).toEqual(["GET /v1/miniapp/bootstrap", "POST /v1/miniapp/assist/soften"]);
@@ -47,7 +47,7 @@ describe("examples/typescript/basic-usage.ts", () => {
       "POST /v1/miniapp/assist/soften": () => json(fixture("delivery_blocked.json")),
     });
 
-    const text = await runExample({ initData: "x", fetch: impl });
+    const text = await runExample({ getInitData: () => "x", baseUrl: "", fetch: impl });
 
     expect(text).toBe((fixture("delivery_blocked.json") as { text: string }).text);
     expect(seen).toHaveLength(4);
@@ -58,8 +58,8 @@ describe("examples/typescript/basic-usage.ts", () => {
       "GET /v1/miniapp/bootstrap": () => json(fixture("error_503.json"), 503),
     });
 
-    await expect(runExample({ initData: "x", fetch: impl })).resolves.toContain("not configured");
-    await expect(runExample({ initData: () => null, fetch: impl })).resolves.toContain("Open the app from Telegram");
+    await expect(runExample({ getInitData: () => "x", baseUrl: "", fetch: impl })).resolves.toContain("not configured");
+    await expect(runExample({ getInitData: () => null, baseUrl: "", fetch: impl })).resolves.toContain("Open the app from Telegram");
   });
 });
 

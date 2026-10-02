@@ -27,7 +27,7 @@ function RelationshipEditForm({
   const dict = useT();
   const updateRelationship = useUpdateRelationshipMutation();
   const [relationType, setRelationType] = useState(relationship.relation_type ?? "");
-  const [aliases, setAliases] = useState(relationship.aliases.join(", "));
+  const [aliases, setAliases] = useState((relationship.aliases ?? []).join(", "));
   const [validationError, setValidationError] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent) {
@@ -74,7 +74,7 @@ function RelationshipEditForm({
 }
 
 function sortRules(rules: RelationshipRule[]): RelationshipRule[] {
-  return [...rules].sort((left, right) => right.priority - left.priority);
+  return [...rules].sort((left, right) => (right.priority ?? 0) - (left.priority ?? 0));
 }
 
 export function RelationshipDetailsScreen() {
@@ -152,7 +152,7 @@ export function RelationshipDetailsScreen() {
     }
   }
 
-  const rules = sortRules(relationship.rules);
+  const rules = sortRules(relationship.rules ?? []);
 
   return (
     <Stack>

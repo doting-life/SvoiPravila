@@ -1,10 +1,11 @@
 // TypeScript usage of @svoi-pravila/miniapp-client.
 //
-// In a Telegram Mini App, pass `Telegram.WebApp.initData` unchanged:
+// In a Telegram Mini App, inject every runtime dependency explicitly:
 //
 //   const client = createMiniAppClient({
-//     initData: () => window.Telegram?.WebApp?.initData,
 //     baseUrl: import.meta.env.VITE_API_BASE ?? "",
+//     getInitData: () => window.Telegram?.WebApp?.initData,
+//     fetch: (input, init) => fetch(input, init),
 //   });
 //
 // The backend derives the user from validated initData; never send user_id.
