@@ -15,7 +15,7 @@ Status tags used below:
 | # | File | What to take away |
 |---|---|---|
 | 1 | `app/main.py` | The FastAPI app: three routers, `/health`, and `mount_miniapp_static` serving the built frontend at `/miniapp`. |
-| 2 | `app/container.py` | `build_container` picks fake vs OpenAI LLM, memory vs Postgres repositories, memory vs Redis checkpoints. |
+| 2 | `app/container.py` | `build_container` picks the LLM provider (fake/openai/gigachat/deepseek via `build_llm_provider`), memory vs Postgres repositories, memory vs Redis checkpoints. |
 | 3 | `app/api/miniapp.py` | The public API. `authenticate_miniapp_user` turns `X-Telegram-Init-Data` into an internal user. |
 | 4 | `config/workflows/soften.yaml` | Stage order, inputs/outputs of each stage, and the validate → generate retry. |
 | 5 | `app/workflows/engine.py` | `WorkflowEngine._run`: the deterministic loop that executes stages, checkpoints and retries. |
@@ -54,7 +54,7 @@ Example: user taps **Soften** in the Mini App.
 | 10 | `safety` | `SafetyStage` → `SafetyDecision`. **[Placeholder]** — see [Placeholder behavior](#placeholder-behavior). |
 | 11 | `context` | `ContextStage` (`app/stages/context.py`): if no `relationship_id`, uses `user.default_relationship_id`; loads record + rules → `RelationshipContext`. No relationship → empty context, `ruleset_version=0`. |
 | 12 | `plan` | `PlanningStage` (`app/stages/planning.py`): rules sorted by `priority` become `constraints`; `tone` from `communication_style`; skill name/version/output from YAML `config`. → `GenerationPlan`. |
-| 13 | `generate` | `GenerationStage` (`app/stages/generation.py`) → `SkillLoader.load_bundle("soften")` (`app/skills/loader.py`) → tool `llm_generate` = `LLMGenerateTool` (`app/tools/llm/tool.py`) → `OpenAIStructuredLLMProvider.generate` or `FakeStructuredLLMProvider.generate`. Output validated into `SoftenResult`. |
+| 13 | `generate` | `GenerationStage` (`app/stages/generation.py`) → `SkillLoader.load_bundle("soften")` (`app/skills/loader.py`) → tool `llm_generate` = `LLMGenerateTool` (`app/tools/llm/tool.py`) → `generate` on the provider selected by `LLM_PROVIDER`: `FakeStructuredLLMProvider`, `OpenAIStructuredLLMProvider`, `GigaChatStructuredLLMProvider` or `DeepSeekStructuredLLMProvider`. Output validated into `SoftenResult`. |
 | 14 | `validate` | `ValidationStage` (`app/stages/validation.py`) → `ValidationResult`. **[Placeholder: partial checks]**. On `retry` the engine re-runs `generate` (max 2 attempts, from YAML). |
 | 15 | `deliver` | `DeliveryStage` (`app/stages/delivery.py`) → `DeliveryResponse { status, text, structured_result }`. |
 | 16 | Response | FastAPI serializes `DeliveryResponse` (`app/artifacts/models.py`). |
@@ -107,6 +107,10 @@ Every stage output passes through `validate_artifact` in the engine, and a check
   - Bodies: `skills/core/*.md`, `skills/workflows/*.md`.
   - `SkillLoader.load_bundle` loads the workflow skill plus its `requires_core_skills`, sorted by `priority`, and joins them as system instructions.
 - **OpenAI:** `OpenAIStructuredLLMProvider` (`app/tools/llm/openai_provider.py`) calls `client.responses.parse(..., text_format=<Pydantic model>)`; SDK `max_retries` from `OPENAI_MAX_RETRIES`.
+- **GigaChat:** `GigaChatStructuredLLMProvider` (`app/tools/llm/gigachat_provider.py`) posts to `{GIGACHAT_BASE_URL}/chat/completions` with `response_format={type: json_schema, schema, strict: true}` and parses `choices[0].message.content`. The access token is obtained from `GIGACHAT_CREDENTIALS`, cached until 60 s before its 30-minute expiry, and refreshed once on HTTP 401.
+- **DeepSeek:** `DeepSeekStructuredLLMProvider` (`app/tools/llm/deepseek_provider.py`) calls the Responses API (`client.responses.create`) at `DEEPSEEK_BASE_URL` with `text.format={type: json_schema, name, schema}`.
+- Both use `app/tools/llm/schema.py` to send the Pydantic model's JSON Schema and to parse and validate the returned JSON. Errors never include credentials, tokens or prompt/response text. Provider selection is `build_llm_provider` in `app/container.py`.
+- **Provider comparison:** `python scripts/compare_providers.py --providers fake,openai,gigachat,deepseek` runs the synthetic cases in `evals/cases/*.json` through the real engine and reports provider/model/workflow/success/latency/schema_valid/result. It does no scoring. Providers that are not configured are reported, not called.
 - **Structured output parsing:** `LLMGenerateTool` (`app/tools/llm/tool.py`) maps the plan's `output_schema` to a model in `ARTIFACT_MODELS` and calls `model.model_validate(...)`. The engine then runs `validate_artifact` again.
 - **Fake provider:** `FakeStructuredLLMProvider` (`app/tools/llm/fake.py`) — [Placeholder: dev/test only] deterministic output, no network.
 - **Why the LLM cannot control workflow progression:**
@@ -128,7 +132,7 @@ Every stage output passes through `validate_artifact` in the engine, and a check
 2. Edit the Markdown body. Keep the output contract consistent with the artifact model (`SoftenResult`, etc. in `app/artifacts/models.py`) — fields are enforced by Pydantic.
 3. If behavior changes meaningfully, bump `version` in the skill manifest and `skill_version` in the stage `config` of `config/workflows/<workflow>.yaml`.
 4. Do not change stage order or artifact names from a prompt.
-5. Run `pytest -q` (notably `tests/test_manifest_contracts.py`). With `LLM_PROVIDER=fake`, prompt text has no effect, so test real behavior with `LLM_PROVIDER=openai`.
+5. Run `pytest -q` (notably `tests/test_manifest_contracts.py`). With `LLM_PROVIDER=fake`, prompt text has no effect, so test real behavior with `LLM_PROVIDER=openai|gigachat|deepseek` (or compare them with `scripts/compare_providers.py`).
 
 ---
 
@@ -210,10 +214,10 @@ Frontend (`frontend/`, Node ≥ 20):
 ```powershell
 cd frontend
 npm install        # or npm ci when package-lock.json is present
-npm run typecheck  # tsc -b
+npm run typecheck  # tsc -b --force
 npm run lint
 npm test           # vitest run
-npm run build      # tsc -b && vite build -> frontend/dist
+npm run build      # tsc -b --force && vite build -> frontend/dist
 npm run dev        # Vite dev server, proxies /v1 to localhost:8000
 ```
 

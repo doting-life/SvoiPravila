@@ -27,12 +27,52 @@ from app.repositories import (
 from app.settings import AppSettings
 from app.skills import SkillLoader
 from app.stages import StageRegistry
-from app.tools.llm import FakeStructuredLLMProvider, LLMGenerateTool, OpenAIStructuredLLMProvider
+from app.tools.llm import (
+    DeepSeekStructuredLLMProvider,
+    FakeStructuredLLMProvider,
+    GigaChatStructuredLLMProvider,
+    LLMGenerateTool,
+    OpenAIStructuredLLMProvider,
+    StructuredLLMProvider,
+)
 from app.tools.registry import ToolRegistry
 from app.workflows.engine import WorkflowDependencies, WorkflowEngine
 
 
 AsyncCloser = Callable[[], Awaitable[Any]]
+
+
+def build_llm_provider(settings: AppSettings) -> tuple[StructuredLLMProvider, AsyncCloser | None]:
+    """Select the structured LLM provider from LLM_PROVIDER. Workflows are provider-agnostic."""
+    if settings.llm_provider == "openai":
+        openai_provider = OpenAIStructuredLLMProvider(
+            api_key=settings.openai_api_key.get_secret_value(),  # type: ignore[union-attr]
+            model=settings.openai_model or "",
+            timeout_seconds=settings.openai_timeout_seconds,
+            max_retries=settings.openai_max_retries,
+        )
+        return openai_provider, openai_provider.aclose
+    if settings.llm_provider == "gigachat":
+        gigachat_provider = GigaChatStructuredLLMProvider(
+            credentials=settings.gigachat_credentials.get_secret_value(),  # type: ignore[union-attr]
+            model=settings.gigachat_model or "",
+            scope=settings.gigachat_scope,
+            base_url=settings.gigachat_base_url,
+            auth_url=settings.gigachat_auth_url,
+            timeout_seconds=settings.gigachat_timeout_seconds,
+            verify=settings.gigachat_ca_bundle or True,
+        )
+        return gigachat_provider, gigachat_provider.aclose
+    if settings.llm_provider == "deepseek":
+        deepseek_provider = DeepSeekStructuredLLMProvider(
+            api_key=settings.deepseek_api_key.get_secret_value(),  # type: ignore[union-attr]
+            model=settings.deepseek_model or "",
+            base_url=settings.deepseek_base_url,
+            timeout_seconds=settings.deepseek_timeout_seconds,
+            max_retries=settings.deepseek_max_retries,
+        )
+        return deepseek_provider, deepseek_provider.aclose
+    return FakeStructuredLLMProvider(), None
 
 
 @dataclass(slots=True)
@@ -57,16 +97,9 @@ def build_container(settings: AppSettings | None = None) -> ApplicationContainer
     closers: list[AsyncCloser] = []
 
     tools = ToolRegistry()
-    if settings.llm_provider == "openai":
-        provider = OpenAIStructuredLLMProvider(
-            api_key=settings.openai_api_key.get_secret_value(),  # type: ignore[union-attr]
-            model=settings.openai_model or "",
-            timeout_seconds=settings.openai_timeout_seconds,
-            max_retries=settings.openai_max_retries,
-        )
-        closers.append(provider.aclose)
-    else:
-        provider = FakeStructuredLLMProvider()
+    provider, provider_closer = build_llm_provider(settings)
+    if provider_closer is not None:
+        closers.append(provider_closer)
     tools.register(LLMGenerateTool(provider))
 
     redis: Redis | None = None

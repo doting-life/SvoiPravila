@@ -57,7 +57,7 @@ Telegram Bot / Telegram Mini App / HTTP
                              v
                        Tool Registry
                              |
-                    Fake LLM / OpenAI
+                    Fake / OpenAI / GigaChat / DeepSeek
                              |
                              v
                     Redis checkpoints
@@ -87,6 +87,8 @@ Example `.env`:
 LLM_PROVIDER=openai
 OPENAI_API_KEY=...
 OPENAI_MODEL=<Structured-Outputs-capable model>
+# Alternatives: LLM_PROVIDER=gigachat (GIGACHAT_CREDENTIALS, GIGACHAT_MODEL)
+#               LLM_PROVIDER=deepseek (DEEPSEEK_API_KEY, DEEPSEEK_MODEL); see .env.example
 RELATIONSHIP_BACKEND=postgres
 DATABASE_URL=postgresql+asyncpg://svoi_pravila:svoi_pravila@localhost:5432/svoi_pravila
 CHECKPOINT_BACKEND=redis
