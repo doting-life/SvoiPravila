@@ -60,9 +60,18 @@ v0.5
 - Docs: `docs/INTEGRATION.md`, `docs/QUICKSTART.md` (fake/memory runtime verified end-to-end against a live uvicorn process), `docs/MINIAPP_API.md` updated.
 - No backend behavior changes.
 
+## Multi-provider LLM support
+
+- `LLM_PROVIDER=fake|openai|gigachat|deepseek`. The provider is selected in `build_llm_provider` (`app/container.py`). Credentials and model are validated in `AppSettings`.
+- `GigaChatStructuredLLMProvider`: REST v1 chat completions, strict `json_schema` response_format, cached access token (refreshed 60 s before its 30-minute expiry, one refresh on 401).
+- `DeepSeekStructuredLLMProvider`: Responses API with `text.format` JSON schema.
+- Every provider payload is parsed and validated with the requested Pydantic model, then validated again by `LLMGenerateTool`. WorkflowEngine, GenerationStage, LLMGenerateTool, artifacts, API, OpenAPI and frontend are unchanged.
+- Comparison harness: `scripts/compare_providers.py` with synthetic cases in `evals/cases/`. It does no scoring.
+- Tests use mocked transports/clients only (`tests/test_llm_providers.py`). No real provider calls have been made, so real-provider quality is unverified.
+
 ## Current validation
 
-- Backend: 72 pytest tests pass (`pytest -q`), including OpenAPI contract, fixtures, Python example smoke and curl coverage tests; `python scripts/export_openapi.py --check` passes.
+- Backend: 103 pytest tests pass (`pytest -q`), including 31 mocked GigaChat/DeepSeek/provider-selection tests, OpenAPI contract, fixtures, Python example smoke and curl coverage tests; `python scripts/export_openapi.py --check` passes.
 - TypeScript client: `check:generated` (openapi-typescript `--check`), `tsc --noEmit`, `npm run build` and 33 Vitest tests pass (2 files), including runtime-independence tests (required injected `fetch`/`getInitData`, no global `fetch` use, no runtime globals in `src/`).
 - Frontend: `tsc -b --force`, ESLint (0 errors, 8 pre-existing `react-refresh/only-export-components` warnings), 54 Vitest tests and `vite build` pass. The Docker frontend stage was reproduced outside Docker (clean `npm ci` + build with the local client package); `docker build` itself was not run in this environment.
 - The test suite covers Telegram initData integrity/expiry, user creation, relationship CRUD, rule creation, default relationship resolution, tenant isolation, workflow retry/resume, OpenAI adapter contracts, Redis checkpoints, and Telegram parsing.
