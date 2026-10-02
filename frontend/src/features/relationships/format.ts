@@ -5,7 +5,7 @@ export const RELATION_TYPE_MAX_LENGTH = 64;
 export const MAX_ALIASES = 20;
 
 export function relationshipLabel(relationship: RelationshipView, dict: TranslationDictionary): string {
-  const alias = relationship.aliases.find((value) => value.trim().length > 0);
+  const alias = (relationship.aliases ?? []).find((value) => value.trim().length > 0);
   const type = relationship.relation_type?.trim();
   if (alias && type) {
     return `${alias} (${type})`;

@@ -18,6 +18,7 @@ import {
   toErrorStatus,
   workflowNameValues,
   type DeliveryResponse,
+  type MiniAppClientOptions,
 } from "../src";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -63,7 +64,7 @@ describe("generated types", () => {
 describe("createMiniAppClient", () => {
   it("sends initData header, JSON body and absolute URL with base", async () => {
     const { fetch, calls } = mockFetch(() => json(fixture("relationship.json"), 201));
-    const client = createMiniAppClient({ initData: "raw_init", baseUrl: "https://api.example.com/", fetch });
+    const client = createMiniAppClient({ getInitData: () => "raw_init", baseUrl: "https://api.example.com/", fetch });
 
     const rel = await client.createRelationship({ relation_type: "spouse", aliases: ["Аня"], set_as_default: true });
 
@@ -85,7 +86,7 @@ describe("createMiniAppClient", () => {
   it("uses same-origin relative URLs by default and resolves base lazily", async () => {
     let base = "";
     const { fetch, calls } = mockFetch(() => json(fixture("bootstrap_without_default.json")));
-    const client = createMiniAppClient({ initData: () => "x", baseUrl: () => base, fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: () => base, fetch });
 
     await client.bootstrap();
     base = "https://late.example.com";
@@ -99,7 +100,7 @@ describe("createMiniAppClient", () => {
 
   it("supports async initData providers", async () => {
     const { fetch, calls } = mockFetch(() => json(fixture("bootstrap_with_default.json")));
-    const client = createMiniAppClient({ initData: async () => "async_init", fetch });
+    const client = createMiniAppClient({ getInitData: async () => "async_init", baseUrl: "", fetch });
 
     const data = await client.bootstrap();
 
@@ -109,7 +110,7 @@ describe("createMiniAppClient", () => {
 
   it("rejects with 401 without calling fetch when initData is missing", async () => {
     const { fetch, calls } = mockFetch(() => json({}));
-    const client = createMiniAppClient({ initData: () => null, fetch });
+    const client = createMiniAppClient({ getInitData: () => null, baseUrl: "", fetch });
 
     await expect(client.bootstrap()).rejects.toMatchObject({ status: 401, detail: "Missing Telegram initData" });
     expect(calls).toHaveLength(0);
@@ -119,7 +120,7 @@ describe("createMiniAppClient", () => {
     const { fetch, calls } = mockFetch(({ init }) =>
       init.method === "DELETE" ? new Response(null, { status: 204 }) : json({}),
     );
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     await client.auth();
     await client.bootstrap();
@@ -150,7 +151,7 @@ describe("createMiniAppClient", () => {
 
   it("encodes path segments", async () => {
     const { fetch, calls } = mockFetch(() => json({}));
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     await client.setDefaultRelationship("a/b c");
 
@@ -159,7 +160,7 @@ describe("createMiniAppClient", () => {
 
   it("returns undefined for 204 responses", async () => {
     const { fetch } = mockFetch(() => new Response(null, { status: 204 }));
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     await expect(client.deleteRule("r1", 1)).resolves.toBeUndefined();
   });
@@ -171,7 +172,7 @@ describe("createMiniAppClient", () => {
   ])("maps %i error fixtures to MiniAppApiError", async (status, name) => {
     const body = fixture<{ detail: string }>(name);
     const { fetch } = mockFetch(() => json(body, status));
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     const err = await client.bootstrap().catch((e: unknown) => e);
 
@@ -183,7 +184,7 @@ describe("createMiniAppClient", () => {
   it("maps 422 validation errors to a structured list", async () => {
     const body = { detail: [{ loc: ["body", "text"], msg: "Field required", type: "missing" }] };
     const { fetch } = mockFetch(() => json(body, 422));
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     const err = (await client.assist("soften", { text: "" }).catch((e: unknown) => e)) as MiniAppApiError;
 
@@ -194,7 +195,7 @@ describe("createMiniAppClient", () => {
 
   it("falls back to a generic detail for non-JSON error bodies", async () => {
     const { fetch } = mockFetch(() => new Response("<html>", { status: 502 }));
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     await expect(client.bootstrap()).rejects.toMatchObject({ status: 502, detail: "Request failed" });
   });
@@ -203,7 +204,7 @@ describe("createMiniAppClient", () => {
     const fetch = vi.fn(async () => {
       throw new TypeError("Failed to fetch");
     }) as unknown as typeof globalThis.fetch;
-    const client = createMiniAppClient({ initData: "x", fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch });
 
     const err = await client.bootstrap().catch((e: unknown) => e);
 
@@ -213,9 +214,39 @@ describe("createMiniAppClient", () => {
   });
 
   it("throws for relative API paths", async () => {
-    const client = createMiniAppClient({ initData: "x", fetch: mockFetch(() => json({})).fetch });
+    const client = createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch: mockFetch(() => json({})).fetch });
 
     await expect(client.request("v1/miniapp/bootstrap")).rejects.toThrow("API path must start with '/'");
+  });
+
+  it("requires injected fetch and getInitData (no global fallback)", () => {
+    const fetch = mockFetch(() => json({})).fetch;
+    expect(() =>
+      createMiniAppClient({ getInitData: () => "x", baseUrl: "" } as unknown as MiniAppClientOptions),
+    ).toThrow("fetch must be provided");
+    expect(() =>
+      createMiniAppClient({ baseUrl: "", fetch } as unknown as MiniAppClientOptions),
+    ).toThrow("getInitData must be a function");
+  });
+
+  it("never touches globalThis.fetch", async () => {
+    const globalFetch = vi.fn();
+    vi.stubGlobal("fetch", globalFetch);
+    try {
+      const { fetch, calls } = mockFetch(() => json({ ok: true }));
+      await createMiniAppClient({ getInitData: () => "x", baseUrl: "", fetch }).bootstrap();
+      expect(calls).toHaveLength(1);
+      expect(globalFetch).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("source does not reference runtime-specific globals", () => {
+    for (const file of readdirSync(resolve(here, "../src")).filter((f) => f.endsWith(".ts"))) {
+      const source = readFileSync(resolve(here, "../src", file), "utf-8");
+      expect(source, file).not.toMatch(/\b(window|globalThis|process|document|import\.meta|Telegram\.WebApp)\b/);
+    }
   });
 });
 

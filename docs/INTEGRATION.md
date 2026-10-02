@@ -114,9 +114,9 @@ is never edited by hand; `src/types.ts` only re-exports its schemas under short 
 import { createMiniAppClient, getStructuredResult, isMiniAppApiError } from "@svoi-pravila/miniapp-client";
 
 const client = createMiniAppClient({
-  initData: () => window.Telegram?.WebApp?.initData, // string | () => string | Promise<string>
-  baseUrl: "",                                        // "" = same origin; or "https://api.example.com"
-  // fetch: customFetch,                               // optional, for tests / SSR
+  baseUrl: "",                                            // "" = same origin; or "https://api.example.com" (string or getter)
+  getInitData: () => window.Telegram?.WebApp?.initData,   // () => string | null | Promise<...>, called per request
+  fetch: (input, init) => fetch(input, init),             // required; the client has no global fallback
 });
 
 const { user, relationships } = await client.bootstrap();
@@ -124,6 +124,9 @@ const delivery = await client.assist("soften", { text: "…", language: "ru" });
 const result = getStructuredResult(delivery); // SoftenResult | null
 ```
 
+- The client is runtime-independent: `baseUrl`, `getInitData` and `fetch` are
+  all injected, and the package never reads `window`, `globalThis.fetch`, Node,
+  Telegram or Vite globals. The same client works in browsers, Node 20+, workers and tests.
 - Missing initData rejects with `MiniAppApiError(401)` **before** any network call.
 - Non-2xx responses throw `MiniAppApiError` with `status`, `detail` (always a
   string), `validationErrors` (for 422) and the raw `body`.
@@ -144,8 +147,9 @@ The Mini App frontend (`frontend/src/api/`) is a thin adapter over this package.
 
 ## 7. Compatibility policy
 
-- `/v1/miniapp/*` is the public client surface. `/v1/assist/*` is internal and
-  not part of this contract.
+- `/v1/miniapp/*` is the public client surface. `/v1/assist/*` is also described
+  in the full OpenAPI document, but it is an internal API and is not exposed by
+  the public Mini App TypeScript client.
 - Version metadata (`info.version` in OpenAPI, `/health`, `API_VERSION` in
   the TS client) is `0.5.0`.
 - Additive response fields are non-breaking; clients must ignore unknown

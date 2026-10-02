@@ -20,13 +20,19 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type InitDataProvider = () => string | null | undefined | Promise<string | null | undefined>;
 
+export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
+
+/**
+ * The client is runtime-independent: it never reads browser, Node, Telegram
+ * or bundler globals. Everything runtime-specific is injected.
+ */
 export type MiniAppClientOptions = {
-  /** Raw Telegram `initData` string, or a function returning it (sync or async). */
-  initData: string | InitDataProvider;
-  /** Backend origin, e.g. "https://api.example.com". Empty string = same origin. */
-  baseUrl?: string | (() => string);
-  /** Custom fetch implementation (defaults to globalThis.fetch). */
-  fetch?: typeof fetch;
+  /** Backend origin, e.g. "https://api.example.com", or a getter for it. Empty string = same origin. */
+  baseUrl: string | (() => string);
+  /** Returns the raw Telegram `initData` string (sync or async), called on every request. */
+  getInitData: InitDataProvider;
+  /** fetch implementation used for every request (required; no global fallback). */
+  fetch: FetchLike;
 };
 
 export type RequestOptions = {
@@ -62,11 +68,18 @@ function normalizeBase(base: string): string {
 const seg = encodeURIComponent;
 
 export function createMiniAppClient(options: MiniAppClientOptions): MiniAppClient {
-  const resolveBase = (): string =>
-    normalizeBase(typeof options.baseUrl === "function" ? options.baseUrl() : (options.baseUrl ?? ""));
+  const { getInitData, fetch: fetchImpl } = options;
+  if (typeof getInitData !== "function") {
+    throw new TypeError("createMiniAppClient: getInitData must be a function");
+  }
+  if (typeof fetchImpl !== "function") {
+    throw new TypeError("createMiniAppClient: fetch must be provided");
+  }
 
-  const resolveInitData = async (): Promise<string | null | undefined> =>
-    typeof options.initData === "function" ? options.initData() : options.initData;
+  const resolveBase = (): string =>
+    normalizeBase(typeof options.baseUrl === "function" ? options.baseUrl() : options.baseUrl);
+
+  const resolveInitData = async (): Promise<string | null | undefined> => getInitData();
 
   const buildUrl = (path: string): string => {
     if (!path.startsWith("/")) {
@@ -82,7 +95,6 @@ export function createMiniAppClient(options: MiniAppClientOptions): MiniAppClien
       throw new MiniAppApiError(401, MISSING_INIT_DATA_DETAIL);
     }
 
-    const fetchImpl = options.fetch ?? globalThis.fetch;
     const response = await fetchImpl(url, {
       method: requestOptions.method ?? "GET",
       headers: {
