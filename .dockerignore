@@ -7,3 +7,4 @@
 frontend/node_modules
 frontend/dist
 frontend/coverage
+clients/typescript/node_modules

@@ -1,0 +1,18 @@
+{
+  "request_id": "22222222-2222-4222-8222-222222222222",
+  "status": "ok",
+  "structured_result": {
+    "alternative_interpretations": [
+      "Человек устал и хочет паузы"
+    ],
+    "emotional_tone": "раздражение",
+    "literal_meaning": "Сейчас не до этого",
+    "probable_intent": "Отложить разговор",
+    "request_id": "22222222-2222-4222-8222-222222222222",
+    "uncertainty": "medium",
+    "version": "1.0"
+  },
+  "text": "Буквально: Сейчас не до этого\nВозможное намерение: Отложить разговор\nТон: раздражение\nНеопределённость: medium",
+  "version": "1.0",
+  "workflow": "decode"
+}

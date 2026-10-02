@@ -156,8 +156,8 @@ Current extension points (no new architecture):
 |---|---|
 | App shell / router | `src/App.tsx` (`initTelegram`), `src/app/AppRouter.tsx` (`BootstrapGate`, `NavigationBar`, `AppLayout`, `AppRoutes`, `AppRouter` using `HashRouter`), `src/app/AppProviders.tsx` (`AppProviders`, `useAppLanguage`, `useT`). |
 | Features | `src/features/assist/`, `src/features/onboarding/`, `src/features/relationships/`, `src/features/settings/`. |
-| API adapter | `src/api/client.ts` (`requestJson`, `buildApiUrl`, `ApiError`), `src/api/miniapp.ts` (`miniAppApi`), `src/api/types.ts` (handwritten DTOs), `src/api/errors.ts` (`toErrorStatus`). |
-| Shared TS client | None in v0.4. |
+| API adapter | Thin adapter over the shared client: `src/api/client.ts` (`apiClient`, `requestJson`, `buildApiUrl`, `ApiError` = `MiniAppApiError`), `src/api/miniapp.ts` (`miniAppApi`), `src/api/types.ts` (re-exports generated DTOs), `src/api/errors.ts` (`toErrorStatus`). |
+DTOs in `src/generated/openapi.ts` are generated from `docs/openapi.json` by openapi-typescript (`npm run generate`);
 | State ownership | Server data: TanStack Query in `src/state/queries.ts`. UI-only state (workflow, draft text, one-off relationship, language): Zustand `src/state/uiStore.ts`, memory only. Language override persisted in `localStorage` by `src/i18n/`. |
 | i18n | `src/i18n/ru.ts`, `en.ts`, `index.ts`. |
 | Telegram adapter | `src/telegram/` — the only place allowed to import `@tma.js/*` (ESLint `no-restricted-imports` in `frontend/eslint.config.js`). |
@@ -259,8 +259,8 @@ These are **partial implementations**, not finished features:
 
 ## Known technical debt and inconsistencies
 
-1. Version metadata: `app/main.py` (FastAPI `version` and `/health`) and `pyproject.toml` say `0.3.0`; `frontend/package.json` says `0.4.0`; `IMPLEMENTATION_STATUS.md` says v0.4.
-2. `IMPLEMENTATION_STATUS.md` says frontend checks were not executed (Node unavailable); they have since been run and pass.
+1. Version metadata: resolved in v0.5 — `app/main.py` (FastAPI `version` and `/health`), `pyproject.toml`, `frontend/package.json` and `clients/typescript/package.json` are all `0.5.0`.
+2. Resolved in v0.5 — `IMPLEMENTATION_STATUS.md` now records executed frontend and client checks.
 3. `docker-compose.yml` `app` service has no profile, so `docker compose up -d` also builds and starts the app.
 4. `Dockerfile` falls back to `npm install` when `package-lock.json` is missing or invalid (non-deterministic build).
 5. `docs/ARCHITECTURE.md` §7 lists paths that don't exist (`app/api/miniapp/`, `app/api/telegram/`, `app/workflows/soften.py`, `app/artifacts/request.py`, `app/repositories/rules.py`).
@@ -269,4 +269,4 @@ These are **partial implementations**, not finished features:
 8. `SafetyStage` and `ValidationStage` are partial (see above).
 9. Checkpoints (`WorkflowEngine._serialize_state`) contain the raw request text until TTL expiry.
 10. In-memory mode seeds demo data.
-11. `docs/MINIAPP_API.md` is titled v0.3 and omits `POST /v1/miniapp/auth`, PATCH `null` = unchanged, and "deleting the default leaves no default".
+11. Resolved in v0.5 — `docs/MINIAPP_API.md` documents `POST /v1/miniapp/auth`, PATCH `null` = unchanged, and "deleting the default leaves no default".

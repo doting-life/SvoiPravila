@@ -1,0 +1,8 @@
+{
+  "request_id": "44444444-4444-4444-8444-444444444444",
+  "status": "blocked",
+  "structured_result": null,
+  "text": "Не могу помочь с этим запросом.",
+  "version": "1.0",
+  "workflow": "soften"
+}

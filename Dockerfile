@@ -1,5 +1,8 @@
 FROM node:20-alpine AS frontend
-WORKDIR /frontend
+# frontend depends on the local client package via "file:../clients/typescript",
+# so both directories keep their repository-relative layout under /src.
+WORKDIR /src/frontend
+COPY clients/typescript/ /src/clients/typescript/
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN if [ -s package-lock.json ] && grep -q '"packages"' package-lock.json; then npm ci; else npm install; fi
 COPY frontend/ ./
@@ -14,6 +17,6 @@ COPY pyproject.toml ./
 COPY app/ ./app/
 RUN pip install --no-cache-dir .
 COPY . .
-COPY --from=frontend /frontend/dist ./frontend/dist
+COPY --from=frontend /src/frontend/dist ./frontend/dist
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

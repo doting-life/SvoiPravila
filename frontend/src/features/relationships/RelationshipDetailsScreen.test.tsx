@@ -20,7 +20,7 @@ const REL = makeRelationship({
   relationship_id: "rel-1",
   aliases: ["Alex"],
   relation_type: "friend",
-  rules: [{ id: 7, type: "tone", value: "Be calm", priority: 5 }],
+  rules: [{ id: 7, type: "tone", value: "Be calm", priority: 5, created_at: null }],
 });
 
 function mockBootstrap(initial: BootstrapResponse) {

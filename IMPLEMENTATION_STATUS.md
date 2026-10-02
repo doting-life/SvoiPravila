@@ -1,4 +1,4 @@
-v0.4
+v0.5
 
 ## Core already implemented
 
@@ -48,10 +48,23 @@ v0.4
 - FastAPI serves the built frontend at `/miniapp` when `MINIAPP_STATIC_DIR` (default `frontend/dist`) exists; API routes are unaffected.
 - Multi-stage `Dockerfile` (frontend build + Python runtime) and `app` service in `docker-compose.yml`.
 
+## Implemented in v0.5 — Integration Kit
+
+- Unified version metadata `0.5.0` (FastAPI app, `/health`, `pyproject.toml`, `frontend/package.json`, `clients/typescript/package.json`).
+- Deterministic OpenAPI export `scripts/export_openapi.py` → `docs/openapi.json` / `docs/openapi.yaml` with `--check`; contract tests in `tests/test_openapi_contract.py`.
+- Validated sample payloads in `docs/fixtures/` (`tests/test_contract_samples.py`).
+DTOs generated from `docs/openapi.json` by `openapi-typescript` (`--default-non-nullable false`) into `src/generated/openapi.ts` (`npm run generate` / `check:generated`; the earlier custom Node generator was removed), handwritten `createMiniAppClient`,
+- Frontend `src/api/` is a thin adapter over the client package; rule ids are handled as `number | null` per contract.
+- Dockerfile frontend stage builds with the local client package (`/src/frontend` + `/src/clients/typescript`).
+- Examples: Python (`examples/python`, smoke-tested in-process), TypeScript and plain JavaScript (tested in the client suite), curl (`tests/test_examples_curl.py` checks coverage of every Mini App OpenAPI operation).
+- Docs: `docs/INTEGRATION.md`, `docs/QUICKSTART.md` (fake/memory runtime verified end-to-end against a live uvicorn process), `docs/MINIAPP_API.md` updated.
+- No backend behavior changes.
+
 ## Current validation
 
-- 22 backend tests pass (including `/miniapp` static hosting tests).
-- Frontend typecheck/lint/Vitest/build not yet executed in this environment (Node.js unavailable).
+- Backend: 72 pytest tests pass (`pytest -q`), including OpenAPI contract, fixtures, Python example smoke and curl coverage tests; `python scripts/export_openapi.py --check` passes.
+- TypeScript client: `check:generated` (openapi-typescript `--check`), `tsc --noEmit`, `npm run build` and 30 Vitest tests pass.
+- Frontend: `tsc -b`, ESLint (0 errors, 8 pre-existing `react-refresh/only-export-components` warnings), 54 Vitest tests and `vite build` pass. The Docker frontend stage was reproduced outside Docker (clean `npm ci` + build with the local client package); `docker build` itself was not run in this environment.
 - The test suite covers Telegram initData integrity/expiry, user creation, relationship CRUD, rule creation, default relationship resolution, tenant isolation, workflow retry/resume, OpenAI adapter contracts, Redis checkpoints, and Telegram parsing.
 
 ## Deliberately deferred
