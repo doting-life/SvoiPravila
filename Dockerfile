@@ -11,6 +11,7 @@ RUN npm run build
 FROM python:3.11-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
+	PYTHONPATH=/app \
 	MINIAPP_STATIC_DIR=/app/frontend/dist
 WORKDIR /app
 COPY pyproject.toml ./

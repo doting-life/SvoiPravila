@@ -75,6 +75,18 @@ uvicorn app.main:app --reload
 
 Defaults use the fake LLM, in-memory repositories, and in-memory checkpoints.
 
+## Docker
+
+Full stack (FastAPI + built Mini App, PostgreSQL, Redis, selectable LLM provider) with Docker Compose:
+
+```powershell
+Copy-Item .env.example .env   # LLM_PROVIDER=fake works without credentials
+docker compose build
+docker compose up -d
+```
+
+Then open http://localhost:8000/health and http://localhost:8000/miniapp/. The schema is created automatically by the one-shot `db-init` service. Start/stop, logs, provider switching, Telegram deployment and troubleshooting: [docs/DOCKER_RUN.md](docs/DOCKER_RUN.md).
+
 ## Production-style infrastructure
 
 ```bash
