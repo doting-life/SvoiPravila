@@ -41,6 +41,17 @@ from app.workflows.engine import WorkflowDependencies, WorkflowEngine
 
 AsyncCloser = Callable[[], Awaitable[Any]]
 
+WORKFLOW_SKILLS: tuple[str, ...] = ("soften", "decode", "help-say")
+
+
+def preload_workflow_skills(skills: SkillLoader) -> None:
+    """Warm the loader cache at startup; a missing or broken skill fails here, not on the first request."""
+    for name in WORKFLOW_SKILLS:
+        try:
+            skills.load_bundle(name)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to preload workflow skill {name!r}: {exc}") from exc
+
 
 def build_llm_provider(settings: AppSettings) -> tuple[StructuredLLMProvider, AsyncCloser | None]:
     """Select the structured LLM provider from LLM_PROVIDER. Workflows are provider-agnostic."""
@@ -94,6 +105,9 @@ class ApplicationContainer:
 
 def build_container(settings: AppSettings | None = None) -> ApplicationContainer:
     settings = settings or AppSettings()
+    # Before any client is created so a broken skill fails startup with nothing to close.
+    skills = SkillLoader()
+    preload_workflow_skills(skills)
     closers: list[AsyncCloser] = []
 
     tools = ToolRegistry()
@@ -146,7 +160,7 @@ def build_container(settings: AppSettings | None = None) -> ApplicationContainer
     trace = RequestTraceSink()
     engine = WorkflowEngine(
         WorkflowDependencies(
-            skills=SkillLoader(),
+            skills=skills,
             tools=tools,
             relationships=relationships,
             users=users,
